@@ -1,0 +1,8 @@
+# Project-Beale operates primarily on Python standard library modules
+# (math, statistics, collections, pathlib, re, urllib, random).
+# Python 3.10+ is recommended.
+
+# Optional tools for extended statistical modeling and visualization:
+# scipy>=1.9.0
+# numpy>=1.23.0
+# matplotlib>=3.5.0

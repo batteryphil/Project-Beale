@@ -9,7 +9,8 @@ import math
 import os
 from pathlib import Path
 
-DATA_DIR = Path("/home/phil/.gemini/antigravity/scratch/beale-engine/data")
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 
 
 def load_cipher(filename: str) -> list[int]:

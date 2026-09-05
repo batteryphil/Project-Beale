@@ -21,7 +21,8 @@ import importlib.util
 from pathlib import Path
 from collections import Counter
 
-DATA_DIR = Path("/home/phil/.gemini/antigravity/scratch/beale-engine/data")
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 random.seed(271828)
 
 # English letter frequencies (%)
@@ -48,13 +49,18 @@ def load_cipher(filename: str) -> list[int]:
 
 def get_doi() -> list[str]:
     """Load verified DoI word list."""
-    spec = importlib.util.spec_from_file_location(
-        "beale_doi_wordlist",
-        "/home/phil/.gemini/antigravity/scratch/beale-engine/beale_doi_wordlist.py"
-    )
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return list(mod.BEALE_DOI)
+    try:
+        from beale_doi_wordlist import BEALE_DOI
+        return list(BEALE_DOI)
+    except ImportError:
+        spec = importlib.util.spec_from_file_location(
+            "beale_doi_wordlist",
+            BASE_DIR / "beale_doi_wordlist.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return list(mod.BEALE_DOI)
+
 
 
 def decode_letters(cipher: list[int], words: list[str], pos: int = 0) -> str:

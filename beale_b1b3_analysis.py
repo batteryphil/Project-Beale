@@ -11,7 +11,8 @@ import math
 import re
 from pathlib import Path
 
-DATA_DIR = Path("/home/phil/.gemini/antigravity/scratch/beale-engine/data")
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 
 
 def load_cipher(filename: str) -> list[int]:
@@ -83,15 +84,20 @@ if __name__ == "__main__":
     b3 = load_cipher("b3.txt")
 
     # Load verified DoI word list
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "beale_doi_wordlist",
-        "/home/phil/.gemini/antigravity/scratch/beale-engine/beale_doi_wordlist.py"
-    )
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    doi = list(mod.BEALE_DOI)
+    try:
+        from beale_doi_wordlist import BEALE_DOI
+        doi = list(BEALE_DOI)
+    except ImportError:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "beale_doi_wordlist",
+            BASE_DIR / "beale_doi_wordlist.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        doi = list(mod.BEALE_DOI)
     print(f"DoI word count: {len(doi)}")
+
 
     # ----------------------------------------------------------------
     print("\n" + "=" * 60)
@@ -142,13 +148,11 @@ if __name__ == "__main__":
     print("\n  English-like substrings in B1 partial decode:")
     import re
     sections = re.findall(r"[A-Z]{4,}", decoded_b1.replace("_", " "))
-    if not words:
-        # Just show readable sections
-        sections = re.findall(r"[A-Z]{4,}", decoded_b1)
-        if sections:
-            print(f"  Long runs: {sections[:10]}")
-        else:
-            print("  (No long runs found — OOR positions break continuity)")
+    if sections:
+        print(f"  Long runs: {sections[:10]}")
+    else:
+        print("  (No long runs found — OOR positions break continuity)")
+
 
     # ----------------------------------------------------------------
     print("\n" + "=" * 60)

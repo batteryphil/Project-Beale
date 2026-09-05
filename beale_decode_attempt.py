@@ -15,7 +15,8 @@ import math
 from pathlib import Path
 from collections import Counter
 
-DATA_DIR = Path("/home/phil/.gemini/antigravity/scratch/beale-engine/data")
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 
 
 def load_cipher(filename: str) -> list[int]:
@@ -69,14 +70,19 @@ if __name__ == "__main__":
     b3 = load_cipher("b3.txt")
 
     # Load the verified DoI word list
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "beale_doi_wordlist",
-        "/home/phil/.gemini/antigravity/scratch/beale-engine/beale_doi_wordlist.py"
-    )
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    doi = list(mod.BEALE_DOI)
+    try:
+        from beale_doi_wordlist import BEALE_DOI
+        doi = list(BEALE_DOI)
+    except ImportError:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "beale_doi_wordlist",
+            BASE_DIR / "beale_doi_wordlist.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        doi = list(mod.BEALE_DOI)
+
 
     # Verify B2 still works
     b2_decoded, _ = decode(b2, doi)

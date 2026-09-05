@@ -27,8 +27,10 @@ import random
 import statistics
 from pathlib import Path
 
-DATA_DIR = Path("/home/phil/.gemini/antigravity/scratch/beale-engine/data")
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 random.seed(2718)
+
 
 STEP_MAX = 50
 N_TRIALS = 500

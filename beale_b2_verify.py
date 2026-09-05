@@ -8,7 +8,8 @@ import re
 import urllib.request
 from pathlib import Path
 
-DATA_DIR = Path("/home/phil/.gemini/antigravity/scratch/beale-engine/data")
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 DOI_PATH = DATA_DIR / "declaration_of_independence.txt"
 DOI_URL = "https://www.gutenberg.org/cache/epub/1/pg1.txt"
 
@@ -16,12 +17,13 @@ DOI_URL = "https://www.gutenberg.org/cache/epub/1/pg1.txt"
 def fetch_doi() -> str:
     """Fetch and cache the Declaration of Independence text."""
     if DOI_PATH.exists():
-        return DOI_PATH.read_text()
+        return DOI_PATH.read_text(encoding="utf-8", errors="replace")
     print(f"Fetching DoI from {DOI_URL}...")
     with urllib.request.urlopen(DOI_URL, timeout=10) as r:
         text = r.read().decode("utf-8", errors="replace")
-    DOI_PATH.write_text(text)
+    DOI_PATH.write_text(text, encoding="utf-8")
     return text
+
 
 
 def build_word_list(text: str) -> list[str]:
@@ -59,9 +61,14 @@ def load_cipher(filename: str) -> list[int]:
 
 
 if __name__ == "__main__":
-    doi_text = fetch_doi()
-    words = build_word_list(doi_text)
-    print(f"DoI word list length: {len(words)}")
+    from beale_doi_wordlist import BEALE_DOI
+
+    print("=================================================================")
+    print("BEALE CIPHER 2 GROUND-TRUTH VERIFICATION")
+    print("=================================================================")
+    
+    words = list(BEALE_DOI)
+    print(f"Beale-variant DoI word list length: {len(words)}")
     print(f"First 20 words: {words[:20]}")
 
     b2 = load_cipher("b2.txt")
@@ -69,22 +76,14 @@ if __name__ == "__main__":
 
     print(f"\nB2 LENGTH: {len(b2)} numbers")
     print(f"OUT-OF-RANGE ERRORS: {errors}")
-    print(f"\nB2 DECODED:\n{b2_decoded}")
-    print(f"\nFirst 100 chars: {b2_decoded[:100]}")
+    print(f"\nFirst 120 chars:\n{b2_decoded[:120]}")
 
-    # Check known B2 plaintext fragment for verification
     known_fragment = "IHAVEDEPOSITED"
     if known_fragment in b2_decoded:
-        print(f"\n✓ VERIFIED: '{known_fragment}' found in decoded output.")
+        print(f"\n✓ VERIFIED: Ground-truth plaintext '{known_fragment}' successfully recovered.")
     else:
-        # Try sliding window check
-        b2_clean = "".join(c for c in b2_decoded if c.isalpha())
-        if known_fragment in b2_clean:
-            print(f"\n✓ VERIFIED (cleaned): '{known_fragment}' found in decoded output.")
-        else:
-            print(f"\n✗ WARNING: '{known_fragment}' NOT found. May need word list adjustment.")
-            # Show the first 200 clean chars for inspection
-            print(f"Clean output start: {b2_clean[:200]}")
+        print(f"\n✗ WARNING: '{known_fragment}' NOT found.")
+
 
     # Now also test B1 max index against this word list length
     b1 = load_cipher("b1.txt")
